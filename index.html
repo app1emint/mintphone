@@ -1,7 +1,7 @@
 <!--
 项目主页：https://github.com/app1emint/mintphone
 小红书：6956837599
-UI由【app1emint】设计 
+UI由【app1emint】设计
 允许二改、学习分享 二次分发请保留署名与协议
 -->
 
@@ -188,6 +188,8 @@ UI由【app1emint】设计
     .plus-btn{ cursor:pointer; fill:#888; }
     .input-wrap{ flex:1; }
     .chat-input{ width:100%; background:#222222; border:none; border-radius:24px; padding:12px 16px; outline:none; font-size:14px; color:#fff; }
+    /* 未解锁时不可点击，光标都不显示 */
+    .chat-input[readonly] { cursor: default; caret-color: transparent; color: #888; }
     .chat-input::placeholder{ color:#888888; }
     .send-btn{
         width:40px; height:40px; border-radius:50%; background:#222; color:#fff; border:none; cursor:pointer;
@@ -496,14 +498,15 @@ UI由【app1emint】设计
     .ig-feed-post-img{ width:100%; aspect-ratio:3/4; background:#111; position:relative; }
     .ig-feed-post-img img{ width:100%; height:100%; object-fit:cover; display:block; }
     
+    /* 💡 修复 Instagram 详情页/首页图标巨大化问题 */
     .ig-post-actions{ display:flex; align-items:center; padding:8px 12px; gap:18px; fill:#fff;}
+    .ig-post-actions svg { width: 26px; height: 26px; }
     .ig-post-actions .save-icon{ margin-left:auto; }
     .ig-post-likes{ padding:0 16px; font-size:14px; font-weight:600; }
     .ig-post-caption{ padding:8px 16px 0; font-size:14px; line-height:1.4; }
     .ig-post-caption b{ font-weight:600; }
     .ig-post-date{ padding:8px 16px; font-size:12px; color:#8e8e93; }
 
-    /* 💡 修复 IG 底部导航栏图标过大的问题 */
     .ig-bottom-nav{ display:flex; justify-content:space-around; align-items:center; padding:10px 0; border-top:1px solid #1f1f1f; fill:#fff;}
     .ig-bottom-nav svg{ width: 26px; height: 26px; fill:#fff; } 
     .ig-nav-avatar{ width:26px; height:26px; border-radius:50%; object-fit:cover; border:1.5px solid #fff; }
@@ -1859,6 +1862,7 @@ UI由【app1emint】设计
 
     // ================= X (Twitter) 逻辑 =================
     let tweetsData = []; 
+    let userTweetPosted = false; // 💡 限制只能发一次推文
 
     function renderTweets() {
         if (tweetsData.length === 0) {
@@ -1911,8 +1915,13 @@ UI由【app1emint】设计
 
     xCompose.onclick = () => {
         xComposePage.style.display = "flex";
-        composeInput.value = "";
-        composePostBtn.classList.remove("active");
+        if (!userTweetPosted) {
+            composeInput.value = "【这里默认填入一段文字，可以直接删掉修改】";
+            composePostBtn.classList.add("active");
+        } else {
+            composeInput.value = "";
+            composePostBtn.classList.remove("active");
+        }
         composeInput.focus();
     };
     composeCancel.onclick = () => {
@@ -1920,6 +1929,7 @@ UI由【app1emint】设计
     };
     
     composeInput.oninput = () => {
+        if (userTweetPosted) return; 
         if (composeInput.value.trim() !== "") {
             composePostBtn.classList.add("active");
         } else {
@@ -1928,6 +1938,8 @@ UI由【app1emint】设计
     };
 
     composePostBtn.onclick = () => {
+        if (userTweetPosted) return; // 限制只能发一次
+        
         const text = composeInput.value.trim();
         if (!text) return;
 
@@ -1939,6 +1951,7 @@ UI由【app1emint】设计
         };
         
         tweetsData.push(postedTweet);
+        userTweetPosted = true;
         composeInput.value = "";
         composePostBtn.classList.remove("active");
         xComposePage.style.display = "none";
